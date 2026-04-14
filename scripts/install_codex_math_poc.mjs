@@ -148,6 +148,7 @@ async function main() {
 
   const workDir = await fs.mkdtemp(path.join(os.tmpdir(), "codex-math-poc-"));
   const extractedDir = path.join(workDir, "asar");
+  const repackedAsarPath = path.join(workDir, "app.asar.new");
 
   try {
     await extractAll(appAsarPath, extractedDir);
@@ -163,7 +164,8 @@ async function main() {
       scriptPath
     );
 
-    await createPackageWithOptions(extractedDir, appAsarPath, {});
+    await createPackageWithOptions(extractedDir, repackedAsarPath, {});
+    await fs.copyFile(repackedAsarPath, appAsarPath);
     const headerHash = await updateInfoPlist(infoPlistPath, appAsarPath);
 
     if (args.resign) {

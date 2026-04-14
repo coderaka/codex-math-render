@@ -88,6 +88,8 @@ Recommended:
 bash ./install.sh
 ```
 
+If `Codex.app` is owned by your current user, this usually does not require `sudo`.
+
 Optional custom app path:
 
 ```bash
@@ -127,6 +129,33 @@ The installer also writes a local state file:
 ```
 
 This records the last installed app path and backup path so uninstall can restore automatically.
+
+## macOS Permissions
+
+On newer macOS versions, patching another app bundle may be blocked by TCC App Management even if:
+
+- `/Applications/Codex.app` is owned by your user
+- the file mode looks writable
+- `sudo` is used
+
+Typical symptom:
+
+```text
+EPERM: operation not permitted, copyfile ... -> /Applications/Codex.app/Contents/Resources/app.asar
+```
+
+If that happens, grant **App Management** permission to the terminal app that is running the installer:
+
+1. Open `System Settings -> Privacy & Security -> App Management`
+2. Find your terminal app, for example:
+   - `Terminal`
+   - `Ghostty`
+   - `iTerm`
+3. Enable permission for that app
+4. Fully quit and reopen the terminal
+5. Run the installer again
+
+This is app-specific. `Terminal` may work while `Ghostty` still fails until Ghostty is granted the same permission.
 
 ## Verification Checklist
 

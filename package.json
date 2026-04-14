@@ -5,7 +5,8 @@
   "version": "0.1.0",
   "description": "KaTeX-based math renderer injection for the Codex desktop app",
   "scripts": {
-    "install-poc": "node ./scripts/install_codex_math_poc.mjs"
+    "install-poc": "node ./scripts/install_codex_math_poc.mjs",
+    "uninstall-poc": "node ./scripts/uninstall_codex_math_poc.mjs"
   },
   "dependencies": {
     "@electron/asar": "^4.1.0"

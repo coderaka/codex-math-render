@@ -37,14 +37,17 @@ If Codex changes its internal webview structure, selectors, CSP, or packaging, t
 
 ```text
 .
+├── install.sh
 ├── LICENSE
 ├── README.md
 ├── package.json
 ├── package-lock.json
 ├── scripts/
-│   └── install_codex_math_poc.mjs
+│   ├── install_codex_math_poc.mjs
+│   └── uninstall_codex_math_poc.mjs
 └── src/
     └── codex_math_poc.js
+├── uninstall.sh
 ```
 
 ## Prerequisites
@@ -62,6 +65,8 @@ If Codex changes its internal webview structure, selectors, CSP, or packaging, t
 npm install
 ```
 
+You can also skip this manual step and let `install.sh` do it automatically on first run.
+
 ## What The Installer Does
 
 `scripts/install_codex_math_poc.mjs` performs the following steps:
@@ -76,6 +81,20 @@ npm install
 8. Re-sign the modified `.app` bundle using ad-hoc signing unless `--no-resign` is passed
 
 ## Install Into Codex
+
+Recommended:
+
+```bash
+bash ./install.sh
+```
+
+Optional custom app path:
+
+```bash
+bash ./install.sh /Applications/Codex.app
+```
+
+Direct Node entry:
 
 ```bash
 node ./scripts/install_codex_math_poc.mjs --app /Applications/Codex.app
@@ -100,6 +119,14 @@ A successful run prints JSON like this:
 ```
 
 `injected: false` is normal on repeated installs. It means the HTML already contains the module tag and the installer updated the renderer asset in place.
+
+The installer also writes a local state file:
+
+```text
+.codex-math-render-state.json
+```
+
+This records the last installed app path and backup path so uninstall can restore automatically.
 
 ## Verification Checklist
 
@@ -141,18 +168,31 @@ I paid $5 for lunch.
 - It relies on Codex's current DOM and package structure
 - It is intentionally conservative and may miss some malformed or heavily transformed inline math
 - It does not yet implement a full Markdown-aware LaTeX parser
-- It does not provide an automated uninstall command yet
+- It assumes the last generated backup is still available when using automatic uninstall
 
 ## Rollback
 
-The installer creates a backup app bundle. To roll back, replace the modified `Codex.app` with the generated backup.
+The installer creates a backup app bundle and records its path in `.codex-math-render-state.json`.
+
+Recommended automatic rollback:
+
+```bash
+bash ./uninstall.sh
+```
+
+If you want to override the backup path explicitly:
+
+```bash
+node ./scripts/uninstall_codex_math_poc.mjs --app /Applications/Codex.app --backup /path/to/Codex-backup.app
+```
 
 Typical flow:
 
 1. Quit Codex
-2. Remove or archive the patched app bundle
-3. Restore the backup app bundle to the original location
-4. Launch Codex again
+2. Run `bash ./uninstall.sh`
+3. The backup app bundle is copied back over the patched app
+4. The restored app is verified with `codesign --verify --deep --strict`
+5. Launch Codex again
 
 ## Development Notes
 

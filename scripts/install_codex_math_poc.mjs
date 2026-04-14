@@ -9,6 +9,8 @@ import { createPackageWithOptions, extractAll, getRawHeader } from "@electron/as
 
 const execFile = promisify(execFileCallback);
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = path.resolve(SCRIPT_DIR, "..");
+const STATE_FILE = path.join(REPO_ROOT, ".codex-math-render-state.json");
 
 const INJECTION_TAG =
   '<script type="module" crossorigin src="./assets/codex-math-poc.js"></script>';
@@ -64,6 +66,10 @@ async function pathExists(targetPath) {
 
 async function copyRecursive(src, dest) {
   await fs.cp(src, dest, { recursive: true, force: true, preserveTimestamps: true });
+}
+
+async function writeStateFile(state) {
+  await fs.writeFile(STATE_FILE, `${JSON.stringify(state, null, 2)}\n`, "utf8");
 }
 
 async function injectIntoHtml(htmlPath) {
@@ -163,6 +169,15 @@ async function main() {
     if (args.resign) {
       await resignApp(appPath);
     }
+
+    await writeStateFile({
+      updatedAt: new Date().toISOString(),
+      appPath,
+      backupDir,
+      script: "install_codex_math_poc.mjs",
+      headerHash,
+      resigned: args.resign
+    });
 
     console.log(
       JSON.stringify(
